@@ -63,7 +63,19 @@ jobs:
         id: check-react-19
         continue-on-error: true
         run: |
-          node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('octofit-tracker/frontend/package.json','utf8')); const react=(pkg.dependencies&&pkg.dependencies.react)||''; const ok=/(^|[^0-9])19([^0-9]|$)/.test(String(react)); if(!ok){console.error(\`Expected frontend dependency \\\"react\\\" to target major version 19, found: \${react||'<missing>'}\`); process.exit(1);} console.log(\`React dependency check passed: \${react}\`);"
+          node <<'NODE'
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('octofit-tracker/frontend/package.json', 'utf8'));
+          const reactDependency = pkg.dependencies?.react || '';
+          const targetsReact19 = /(^|[^0-9])19([^0-9]|$)/.test(String(reactDependency));
+
+          if (!targetsReact19) {
+            console.error(`Expected frontend dependency "react" to target major version 19, found: ${reactDependency || '<missing>'}`);
+            process.exit(1);
+          }
+
+          console.log(`React dependency check passed: ${reactDependency}`);
+          NODE
 
       - name: Check Express dependency
         id: check-express
