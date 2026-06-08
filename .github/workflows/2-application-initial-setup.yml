@@ -62,12 +62,24 @@ jobs:
       - name: Check React 19 dependency
         id: check-react-19
         continue-on-error: true
-        uses: skills/action-keyphrase-checker@v2.0.0
-        with:
-          text-file: octofit-tracker/frontend/package.json
-          keyphrase: '"react": "^19'
-          minimum-occurrences: 1
-          case-sensitive: false
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('octofit-tracker/frontend/package.json', 'utf8'));
+          const reactDependency = pkg.dependencies?.react || '';
+          const normalizedReactDependency = String(reactDependency).trim();
+          const isMajor19Semver = /^(?:\^|~)?19(?:\.\d+){0,2}$/.test(normalizedReactDependency);
+          const isMajor19Wildcard = /^19\.x$/.test(normalizedReactDependency);
+          const isMajor19Range = /^>=\s*19(?:\.\d+){0,2}\s*<\s*20(?:\.\d+){0,2}$/.test(normalizedReactDependency);
+          const targetsReact19 = isMajor19Semver || isMajor19Wildcard || isMajor19Range;
+
+          if (!targetsReact19) {
+            console.error(`Expected frontend dependency "react" to target major version 19, found: ${reactDependency || '<missing>'}`);
+            process.exit(1);
+          }
+
+          console.log(`React dependency check passed: ${reactDependency}`);
+          NODE
 
       - name: Check Express dependency
         id: check-express
