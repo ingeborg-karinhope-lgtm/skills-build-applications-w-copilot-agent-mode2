@@ -68,9 +68,10 @@ jobs:
           const pkg = JSON.parse(fs.readFileSync('octofit-tracker/frontend/package.json', 'utf8'));
           const reactDependency = pkg.dependencies?.react || '';
           const normalizedReactDependency = String(reactDependency).trim();
-          const isMajor19Semver = /^(?:\^|~)?19(?:[.x]|$)/.test(normalizedReactDependency);
-          const isMajor19Range = /^>=\s*19(?:\.0\.0)?\s*<\s*20(?:\.0\.0)?$/.test(normalizedReactDependency);
-          const targetsReact19 = isMajor19Semver || isMajor19Range;
+          const isMajor19Semver = /^(?:\^|~)?19(?:\.\d+){0,2}$/.test(normalizedReactDependency);
+          const isMajor19Wildcard = /^19\.x$/.test(normalizedReactDependency);
+          const isMajor19Range = /^>=\s*19(?:\.\d+){0,2}\s*<\s*20(?:\.\d+){0,2}$/.test(normalizedReactDependency);
+          const targetsReact19 = isMajor19Semver || isMajor19Wildcard || isMajor19Range;
 
           if (!targetsReact19) {
             console.error(`Expected frontend dependency "react" to target major version 19, found: ${reactDependency || '<missing>'}`);
